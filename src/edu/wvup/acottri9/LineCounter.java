@@ -2,6 +2,9 @@ package edu.wvup.acottri9;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.Dictionary;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
 
 /**
@@ -50,10 +53,10 @@ public class LineCounter
         return lineCount;
 
     }
-    
+
 
     /**
-     * Count int.
+     * Counts lines in a code file.
      *
      * @param rawLines : the string it contains
      * @return the amount of lines of proper code
@@ -78,6 +81,71 @@ public class LineCounter
     }
 
     /**
+     * Returns a map containing a count
+     * of a how many occurrences of each vowel are in
+     * a given string.
+     *
+     * @param input an string to return
+     * @return a Map with each vowel as the key, and the count
+     * as a value.
+     */
+    public static Map<Character, Integer> countVowels(String input)
+    {
+        Map<Character, Integer> vowelCount = new HashMap<Character, Integer>();
+
+        vowelCount.put('a',0);
+        vowelCount.put('e',0);
+        vowelCount.put('i',0);
+        vowelCount.put('o',0);
+        vowelCount.put('u',0);
+        for (char ch: input.toCharArray())
+        {
+            switch (ch)
+            {
+                case 'a':
+                    vowelCount.put('a', vowelCount.get('a') + 1);
+                    break;
+                case 'e':
+                    vowelCount.put('e', vowelCount.get('e') + 1);
+                    break;
+                case 'i':
+                    vowelCount.put('i', vowelCount.get('i') + 1);
+                    break;
+                case 'o':
+                    vowelCount.put('o', vowelCount.get('o') + 1);
+                    break;
+                case 'u':
+                    vowelCount.put('u', vowelCount.get('u') + 1);
+                    break;
+                default:
+                    break;
+            }
+        }
+        return vowelCount;
+    }
+
+    /**
+     * Counts the number of times a
+     * character appears in a string
+     *
+     * @param str the string to read
+     * @param ch  the character to look for
+     * @return the number of occurances.
+     */
+    public static int countACharacter(String str, char ch)
+    {
+        int amount = 0;
+        for (char letter: str.toCharArray())
+        {
+           if(ch == letter)
+           {
+              amount++;
+           }
+        }
+        return amount;
+    }
+
+    /**
      * Counts the amount of characters in a line
      *
      * @param rawLines : a raw string
@@ -93,11 +161,6 @@ public class LineCounter
         for(String line : lines)
         {
             charCount += line.trim().length();
-           // if (!line.trim().startsWith("//") && !line.trim().startsWith("/*") && !line.trim().startsWith("*/") && !line.trim().startsWith("*") && !line.isEmpty())
-           // {
-            //     lineCount++;
-          //  }
-
         }
 
         return charCount;

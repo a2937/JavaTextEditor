@@ -6,6 +6,7 @@ import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Highlighter;
 import java.awt.*; // for the GUI stuff
 import java.awt.event.*; // for the event handling
+import java.util.Map;
 import java.util.Scanner; // for reading from a file
 import java.io.*; // for writing to a file
 
@@ -19,8 +20,9 @@ public class TextEditor extends JFrame implements ActionListener, KeyListener  {
     private Highlighter highlighter;
     private JLabel labelLineCount;
 	private JTextArea textArea = new JTextArea("",0, 0);
-	private MenuBar menuBar = new MenuBar(); // first, create a MenuBar item
+	private MenuBar ourMenuBar = new MenuBar(); // first, create a MenuBar item
 	private Menu file = new Menu(); // our File menu
+    private Menu statistics = new Menu(); // our Stats menu
 	private Menu style = new Menu(); // our Style menu
 
 	// what's going in File? let's see...
@@ -32,6 +34,9 @@ public class TextEditor extends JFrame implements ActionListener, KeyListener  {
 	private MenuItem darkTheme = new MenuItem(); // black on white instead of white on black
 	private MenuItem fontName = new MenuItem(); // The name of the font
 	private MenuItem fontSize = new MenuItem(); // The size of the font
+
+    //in statistics
+    private MenuItem vowelCount = new MenuItem(); // Displays a print out of the number of occurrences of each vowel.
 	/**
 	 * Launch the application.
 	 */
@@ -71,13 +76,15 @@ public class TextEditor extends JFrame implements ActionListener, KeyListener  {
 		getContentPane().add(labelLineCount, BorderLayout.SOUTH);
 
 		// add our menu bar into the GUI
-		this.setMenuBar(this.menuBar);
-		this.menuBar.add(this.file); // we'll configure this later
-		this.menuBar.add(this.style);
+		this.setMenuBar(this.ourMenuBar);
+		this.ourMenuBar.add(this.file); // we'll configure this later
+		this.ourMenuBar.add(this.style);
+		this.ourMenuBar.add(this.statistics);
 		// first off, the design of the menuBar itself. Pretty simple, all we need to do
 		// is add a couple of menus, which will be populated later on
 		this.file.setLabel("File");
 		this.style.setLabel("Style");
+		this.statistics.setLabel("Statistics");
 		// now it's time to work with the menu. I'm only going to add a basic File menu
 		// but you could add more!
 		
@@ -119,6 +126,18 @@ public class TextEditor extends JFrame implements ActionListener, KeyListener  {
 		if (e.getSource() == this.close)
         {
             this.dispose(); // dispose all resources and close the application
+        }
+        else if(e.getSource() == this.vowelCount)
+        {
+            StringBuilder builder = new StringBuilder();
+            builder.append("Vowel Count: \n");
+            Map<Character, Integer> vowels = LineCounter.countVowels(textArea.getText());
+            builder.append("a : ").append(vowels.get('a'));
+            builder.append("e : ").append(vowels.get('e'));
+            builder.append("i : ").append(vowels.get('i'));
+            builder.append("o : ").append(vowels.get('o'));
+            builder.append("u : ").append(vowels.get('u'));
+            JOptionPane.showMessageDialog(getParent(), builder.toString() );
         }
         else if(e.getSource() == this.darkTheme)
         {
@@ -194,12 +213,13 @@ public class TextEditor extends JFrame implements ActionListener, KeyListener  {
 			int option = save.showSaveDialog(this); // similar to the open file, only this time we call
 			// showSaveDialog instead of showOpenDialog
 			// if the user clicked OK (and not cancel)
-			if (option == JFileChooser.APPROVE_OPTION) {
-				try {
+			if (option == JFileChooser.APPROVE_OPTION)
+			{
+				try(BufferedWriter out = new BufferedWriter(new FileWriter(save.getSelectedFile().getPath())))
+				{
 					// create a buffered writer to write to a file
-					BufferedWriter out = new BufferedWriter(new FileWriter(save.getSelectedFile().getPath()));
 					out.write(this.textArea.getText()); // write the contents of the TextArea to the file
-					out.close(); // close the file stream
+				  // close the file stream
 				} catch (Exception ex) { // again, catch any exceptions and...
 					// ...write to the debug console
 					System.out.println(ex.getMessage());
