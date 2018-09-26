@@ -156,24 +156,32 @@ public class TextEditor extends JFrame implements ActionListener, KeyListener  {
             String expression = JOptionPane.showInputDialog(getParent(),"Insert a regular expression.");
             try
             {
-                Pattern pattern = Pattern.compile(expression);
-                Matcher matcher = pattern.matcher(textArea.getText());
-                if(matcher.find())
+                if(expression != null)
                 {
-                    StringBuilder builder = new StringBuilder();
-                    builder.append("Matches: \n");
-
-                    for(int i = 0; i  <matcher.groupCount() - 1; i++)
+                    Pattern pattern = Pattern.compile(expression);
+                    Matcher matcher = pattern.matcher(textArea.getText());
+                    if(matcher.find())
                     {
-                        builder.append(matcher.group(i)).append(",");
+                        StringBuilder builder = new StringBuilder();
+                        builder.append("Matches: \n");
+
+                        for(int i = 0; i  <matcher.groupCount() - 1; i++)
+                        {
+                            builder.append(matcher.group(i)).append(",");
+                        }
+                        builder.append(matcher.group(matcher.groupCount()));
+                        JOptionPane.showMessageDialog(getParent(), builder.toString());
                     }
-                    builder.append(matcher.group(matcher.groupCount()));
-                    JOptionPane.showMessageDialog(getParent(), builder.toString());
+                    else
+                    {
+                        JOptionPane.showMessageDialog(getParent(), "No matches.");
+                    }
                 }
-               else
+                else
                 {
-                    JOptionPane.showMessageDialog(getParent(), "No matches.");
+                    JOptionPane.showMessageDialog(getParent(), "Error: expression empty");
                 }
+
             }
             catch(PatternSyntaxException exception)
             {
