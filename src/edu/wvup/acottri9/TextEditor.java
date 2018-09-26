@@ -9,8 +9,9 @@ import java.awt.event.*; // for the event handling
 import java.util.Map;
 import java.util.Scanner; // for reading from a file
 import java.io.*; // for writing to a file
-
-
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 
 public class TextEditor extends JFrame implements ActionListener, KeyListener  {
@@ -22,7 +23,7 @@ public class TextEditor extends JFrame implements ActionListener, KeyListener  {
 	private JTextArea textArea = new JTextArea("",0, 0);
 	private MenuBar ourMenuBar = new MenuBar(); // first, create a MenuBar item
 	private Menu file = new Menu(); // our File menu
-    private Menu statistics = new Menu(); // our Stats menu
+    private Menu tools = new Menu(); // our Tools menu
 	private Menu style = new Menu(); // our Style menu
 
 	// what's going in File? let's see...
@@ -35,8 +36,10 @@ public class TextEditor extends JFrame implements ActionListener, KeyListener  {
 	private MenuItem fontName = new MenuItem(); // The name of the font
 	private MenuItem fontSize = new MenuItem(); // The size of the font
 
-    //in statistics
+    //in tools
     private MenuItem vowelCount = new MenuItem(); // Displays a print out of the number of occurrences of each vowel.
+    private MenuItem performRegix = new MenuItem(); // Creates a display to run Regular expressions against the text in the file
+
 	/**
 	 * Launch the application.
 	 */
@@ -79,12 +82,12 @@ public class TextEditor extends JFrame implements ActionListener, KeyListener  {
 		this.setMenuBar(this.ourMenuBar);
 		this.ourMenuBar.add(this.file); // we'll configure this later
 		this.ourMenuBar.add(this.style);
-		this.ourMenuBar.add(this.statistics);
+		this.ourMenuBar.add(this.tools);
 		// first off, the design of the menuBar itself. Pretty simple, all we need to do
 		// is add a couple of menus, which will be populated later on
 		this.file.setLabel("File");
 		this.style.setLabel("Style");
-		this.statistics.setLabel("Statistics");
+		this.tools.setLabel("Tools");
 		// now it's time to work with the menu. I'm only going to add a basic File menu
 		// but you could add more!
 		
@@ -106,7 +109,16 @@ public class TextEditor extends JFrame implements ActionListener, KeyListener  {
 		this.saveFile.addActionListener(this);
 		this.saveFile.setShortcut(new MenuShortcut(KeyEvent.VK_S, false));
 		this.file.add(this.saveFile);
-		
+
+		//Vowel count menu item
+        this.vowelCount.setLabel("Count vowels.");
+        this.vowelCount.addActionListener(this);
+		this.tools.add(vowelCount);
+
+		//Regix menu item
+        this.performRegix.setLabel("Run Regular Expression");
+        this.performRegix.addActionListener(this);
+		this.tools.add(performRegix);
 		// and finally, the close option
 		this.close.setLabel("Close");
 		// along with our "CTRL+F4" shortcut to close the window, we also have
@@ -132,12 +144,41 @@ public class TextEditor extends JFrame implements ActionListener, KeyListener  {
             StringBuilder builder = new StringBuilder();
             builder.append("Vowel Count: \n");
             Map<Character, Integer> vowels = LineCounter.countVowels(textArea.getText());
-            builder.append("a : ").append(vowels.get('a'));
-            builder.append("e : ").append(vowels.get('e'));
-            builder.append("i : ").append(vowels.get('i'));
-            builder.append("o : ").append(vowels.get('o'));
+            builder.append("a : ").append(vowels.get('a')).append("\n");
+            builder.append("e : ").append(vowels.get('e')).append("\n");
+            builder.append("i : ").append(vowels.get('i')).append("\n");
+            builder.append("o : ").append(vowels.get('o')).append("\n");
             builder.append("u : ").append(vowels.get('u'));
             JOptionPane.showMessageDialog(getParent(), builder.toString() );
+        }
+        else if(e.getSource() == this.performRegix)
+        {
+            String expression = JOptionPane.showInputDialog(getParent(),"Insert a regular expression.");
+            try
+            {
+                Pattern pattern = Pattern.compile(expression);
+                Matcher matcher = pattern.matcher(textArea.getText());
+                if(matcher.find())
+                {
+                    StringBuilder builder = new StringBuilder();
+                    builder.append("Matches: \n");
+
+                    for(int i = 0; i  <matcher.groupCount() - 1; i++)
+                    {
+                        builder.append(matcher.group(i)).append(",");
+                    }
+                    builder.append(matcher.group(matcher.groupCount()));
+                    JOptionPane.showMessageDialog(getParent(), builder.toString());
+                }
+               else
+                {
+                    JOptionPane.showMessageDialog(getParent(), "No matches.");
+                }
+            }
+            catch(PatternSyntaxException exception)
+            {
+                JOptionPane.showMessageDialog(getParent(), "Error on Regex : \n" + exception.getMessage() );
+            }
         }
         else if(e.getSource() == this.darkTheme)
         {
