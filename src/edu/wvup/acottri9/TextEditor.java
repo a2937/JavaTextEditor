@@ -88,11 +88,18 @@ public class TextEditor extends JFrame implements ActionListener, KeyListener  {
 		this.file.setLabel("File");
 		this.style.setLabel("Style");
 		this.tools.setLabel("Tools");
+
+
 		// now it's time to work with the menu. I'm only going to add a basic File menu
 		// but you could add more!
 		
 		// now we can start working on the content of the menu~ this gets a little repetitive,
 		// so please bare with me!
+
+		//Font size
+		this.fontSize.setLabel("Font Size");
+		this.fontSize.addActionListener(this);
+		this.style.add(this.fontSize);
 
 		this.darkTheme.setLabel("Invert color palette");
 		this.darkTheme.addActionListener(this);
@@ -217,6 +224,19 @@ public class TextEditor extends JFrame implements ActionListener, KeyListener  {
                 inDarkTheme = false;
             }
         }
+        else if(e.getSource() == this.fontSize)
+		{
+			String fontSizeString = JOptionPane.showInputDialog(getParent(),"Pick a new font size. Current size: " + textArea.getFont().getSize());
+			try
+			{
+				float properFontSize = Float.parseFloat(fontSizeString);
+				textArea.setFont(textArea.getFont().deriveFont(properFontSize));
+			}
+			catch(NumberFormatException ex)
+			{
+				JOptionPane.showMessageDialog(getParent(), "Error on Font Size setting: \n" + ex.getMessage() );
+			}
+		}
 		
 		// if the source was the "open" option
 		else if (e.getSource() == this.openFile) {
