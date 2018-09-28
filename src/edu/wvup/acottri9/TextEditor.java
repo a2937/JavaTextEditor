@@ -96,8 +96,13 @@ public class TextEditor extends JFrame implements ActionListener, KeyListener  {
 		// now we can start working on the content of the menu~ this gets a little repetitive,
 		// so please bare with me!
 
+		//Font style
+		this.fontName.setLabel("Select different font");
+		this.fontName.addActionListener(this);
+		this.style.add(this.fontName);
+
 		//Font size
-		this.fontSize.setLabel("Font Size");
+		this.fontSize.setLabel("Change Font Size");
 		this.fontSize.addActionListener(this);
 		this.style.add(this.fontSize);
 
@@ -237,6 +242,29 @@ public class TextEditor extends JFrame implements ActionListener, KeyListener  {
 				JOptionPane.showMessageDialog(getParent(), "Error on Font Size setting: \n" + ex.getMessage() );
 			}
 		}
+		else if(e.getSource() == this.fontName)
+        {
+                GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
+                Font[] fonts = graphicsEnvironment.getAllFonts();
+                String[] fontNames = new String[fonts.length];
+                for(int i = 0; i < fonts.length; i++)
+                {
+                    fontNames[i] = fonts[i].getName();
+                }
+                //JComboBox<Font> fontBox = new JComboBox<>(fonts);
+                 JFrame frame = new JFrame();
+                 frame.setAlwaysOnTop(true);
+                 String selectedFontName =  (String)JOptionPane.showInputDialog(frame, "Choose", "Menu", JOptionPane.PLAIN_MESSAGE, null, fontNames, textArea.getFont().getName());
+                 Font selectedFont = new Font(selectedFontName, Font.PLAIN, textArea.getFont().getSize());
+                // if(selectedFont != null)
+                // {
+                     textArea.setFont(selectedFont);
+                // }
+                //fontBox.setVisible(true);
+               // panel.add(fontBox);
+                //panel.setVisible(true);
+                //fontBox.setPopupVisible(true);
+        }
 		
 		// if the source was the "open" option
 		else if (e.getSource() == this.openFile) {
