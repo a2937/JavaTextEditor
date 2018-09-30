@@ -17,14 +17,17 @@ import java.util.regex.PatternSyntaxException;
 public class TextEditor extends JFrame implements ActionListener, KeyListener  {
 
 	private boolean inDarkTheme = false;
-    private Highlighter.HighlightPainter paint = new DefaultHighlighter.DefaultHighlightPainter(Color.pink);
-    private Highlighter highlighter;
+    private transient  Highlighter.HighlightPainter paint = new DefaultHighlighter.DefaultHighlightPainter(Color.pink);
+    private transient Highlighter highlighter;
     private JLabel labelLineCount;
 	private JTextArea textArea = new JTextArea("",0, 0);
-	private MenuBar ourMenuBar = new MenuBar(); // first, create a MenuBar item
-	private Menu file = new Menu(); // our File menu
-    private Menu tools = new Menu(); // our Tools menu
-	private Menu style = new Menu(); // our Style menu
+	private transient MenuBar ourMenuBar = new MenuBar(); // first, create a MenuBar item
+	private transient Menu file = new Menu(); // our File menu
+    private transient Menu tools = new Menu(); // our Tools menu
+	private transient Menu style = new Menu(); // our Style menu
+	private transient Menu language = new Menu(); // a new language menu for syntax highlighting
+    private transient Menu help = new Menu(); // a standard help menu
+
 
 	// what's going in File? let's see...
 	private MenuItem openFile = new MenuItem();  // an open option
@@ -39,6 +42,10 @@ public class TextEditor extends JFrame implements ActionListener, KeyListener  {
     //in tools
     private MenuItem vowelCount = new MenuItem(); // Displays a print out of the number of occurrences of each vowel.
     private MenuItem performRegix = new MenuItem(); // Creates a display to run Regular expressions against the text in the file
+
+    //In the help menu
+    private MenuItem aboutApp = new MenuItem(); // Displays information build info
+    private MenuItem docs = new MenuItem(); //In case users need information on keybindings/shortcuts and that stuff
 
 	/**
 	 * Launch the application.
@@ -59,7 +66,7 @@ public class TextEditor extends JFrame implements ActionListener, KeyListener  {
 	 */
 	public TextEditor() {
 		this.setSize(500, 300); // set the initial size of the window
-		this.setTitle("Java Notepad Tutorial"); // set the title of the window
+		this.setTitle("Custom Notepad"); // set the title of the window
 		setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE); // set the default close operation (exit when it gets closed)
 
         JScrollPane scroll = new JScrollPane (textArea,
@@ -83,12 +90,15 @@ public class TextEditor extends JFrame implements ActionListener, KeyListener  {
 		this.ourMenuBar.add(this.file); // we'll configure this later
 		this.ourMenuBar.add(this.style);
 		this.ourMenuBar.add(this.tools);
+		this.ourMenuBar.add(this.help);
+		this.ourMenuBar.add(this.language);
 		// first off, the design of the menuBar itself. Pretty simple, all we need to do
 		// is add a couple of menus, which will be populated later on
 		this.file.setLabel("File");
 		this.style.setLabel("Style");
 		this.tools.setLabel("Tools");
-
+		this.help.setLabel("Help");
+		this.language.setLabel("Language"); 
 
 		// now it's time to work with the menu. I'm only going to add a basic File menu
 		// but you could add more!
@@ -106,9 +116,20 @@ public class TextEditor extends JFrame implements ActionListener, KeyListener  {
 		this.fontSize.addActionListener(this);
 		this.style.add(this.fontSize);
 
+		//Dark theme
 		this.darkTheme.setLabel("Invert color palette");
 		this.darkTheme.addActionListener(this);
 		this.style.add(this.darkTheme);
+
+		//About information
+        this.aboutApp.setLabel("About");
+        this.aboutApp.addActionListener(this);
+        this.help.add(this.aboutApp);
+
+        //Documentation
+        this.docs.setLabel("Tips and tricks");
+        this.docs.addActionListener(this);
+        this.help.add(this.docs);
 
 		// time for the repetitive stuff. let's add the "Open" option
 		this.openFile.setLabel("Open"); // set the label of the menu item
@@ -242,6 +263,14 @@ public class TextEditor extends JFrame implements ActionListener, KeyListener  {
 				JOptionPane.showMessageDialog(getParent(), "Error on Font Size setting: \n" + ex.getMessage() );
 			}
 		}
+		else if(e.getSource() == this.aboutApp)
+		{
+			JOptionPane.showMessageDialog(getParent(), "This is a custom notepad app developed in my free time.","About app", JOptionPane.INFORMATION_MESSAGE);
+		}
+		else if(e.getSource() == this.docs)
+		{
+			JOptionPane.showMessageDialog(getParent(), "Coming soon.","Tips and tricks", JOptionPane.INFORMATION_MESSAGE);
+		}
 		else if(e.getSource() == this.fontName)
         {
                 GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
@@ -284,6 +313,7 @@ public class TextEditor extends JFrame implements ActionListener, KeyListener  {
 
                     }
                     labelLineCount.setText(LineCounter.CountLines(textArea.getText()) + " Lines " + LineCounter.CountCharacters(textArea.getText()) + " characters");
+                    /*
                     if (textArea.getText().contains("class")) {
                         int start = textArea.getText().indexOf("class");
 
@@ -295,6 +325,7 @@ public class TextEditor extends JFrame implements ActionListener, KeyListener  {
                             System.err.println(ex.getLocalizedMessage());
                         }
                     }
+                    */
 
                 } catch (Exception ex) { // catch any exceptions, and...
                     // ...write to the debug console
