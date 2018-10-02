@@ -42,11 +42,12 @@ public class TextEditor extends JFrame implements ActionListener, KeyListener  {
     //in tools
     private MenuItem vowelCount = new MenuItem(); // Displays a print out of the number of occurrences of each vowel.
     private MenuItem performRegix = new MenuItem(); // Creates a display to run Regular expressions against the text in the file
-
+	private MenuItem findAndReplace = new MenuItem(); // The most important feature of a text editor; a find and replace option
     //In the help menu
     private MenuItem aboutApp = new MenuItem(); // Displays information build info
     private MenuItem docs = new MenuItem(); //In case users need information on keybindings/shortcuts and that stuff
 
+	private MenuItem javaLang = new MenuItem(); // A button for syntax highlighting java
 	/**
 	 * Launch the application.
 	 */
@@ -98,13 +99,8 @@ public class TextEditor extends JFrame implements ActionListener, KeyListener  {
 		this.style.setLabel("Style");
 		this.tools.setLabel("Tools");
 		this.help.setLabel("Help");
-		this.language.setLabel("Language"); 
+		this.language.setLabel("Language");
 
-		// now it's time to work with the menu. I'm only going to add a basic File menu
-		// but you could add more!
-		
-		// now we can start working on the content of the menu~ this gets a little repetitive,
-		// so please bare with me!
 
 		//Font style
 		this.fontName.setLabel("Select different font");
@@ -130,6 +126,11 @@ public class TextEditor extends JFrame implements ActionListener, KeyListener  {
         this.docs.setLabel("Tips and tricks");
         this.docs.addActionListener(this);
         this.help.add(this.docs);
+
+        //Find and replace
+		this.findAndReplace.setLabel("Find and replace");
+		this.findAndReplace.addActionListener(this);
+		this.tools.add(this.findAndReplace);
 
 		// time for the repetitive stuff. let's add the "Open" option
 		this.openFile.setLabel("Open"); // set the label of the menu item
@@ -221,6 +222,25 @@ public class TextEditor extends JFrame implements ActionListener, KeyListener  {
                 JOptionPane.showMessageDialog(getParent(), "Error on Regex : \n" + exception.getMessage() );
             }
         }
+        else if(e.getSource() == this.findAndReplace)
+		{
+			JTextField toFind = new JTextField();
+			JTextField replacement = new JTextField();
+			Object[] message = {
+					"To find:", toFind,
+					"Replace with:", replacement
+			};
+
+			int option = JOptionPane.showConfirmDialog(getParent(), message, "Find and Replace", JOptionPane.OK_CANCEL_OPTION);
+			if (option == JOptionPane.OK_OPTION)
+			{
+				String theWordToFind = toFind.getText();
+				String theWordToReplaceWith = replacement.getText();
+				String ourContents = textArea.getText();
+				textArea.setText(ourContents.replaceAll(theWordToFind,theWordToReplaceWith));
+
+			}
+		}
         else if(e.getSource() == this.darkTheme)
         {
             if(!inDarkTheme)
