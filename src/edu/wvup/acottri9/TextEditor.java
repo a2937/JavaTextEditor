@@ -17,6 +17,7 @@ import java.util.regex.PatternSyntaxException;
 public class TextEditor extends JFrame implements ActionListener, KeyListener  {
 
 	private boolean inDarkTheme = false;
+	private boolean useWordWrap = true;
     private transient  Highlighter.HighlightPainter paint = new DefaultHighlighter.DefaultHighlightPainter(Color.pink);
     private transient Highlighter highlighter;
     private JLabel labelLineCount;
@@ -38,7 +39,7 @@ public class TextEditor extends JFrame implements ActionListener, KeyListener  {
 	private MenuItem darkTheme = new MenuItem(); // black on white instead of white on black
 	private MenuItem fontName = new MenuItem(); // The name of the font
 	private MenuItem fontSize = new MenuItem(); // The size of the font
-
+	private MenuItem wordWrapOption = new MenuItem(); // Whether or not words should go to the next line
     //in tools
     private MenuItem vowelCount = new MenuItem(); // Displays a print out of the number of occurrences of each vowel.
     private MenuItem performRegix = new MenuItem(); // Creates a display to run Regular expressions against the text in the file
@@ -75,6 +76,8 @@ public class TextEditor extends JFrame implements ActionListener, KeyListener  {
 
 
 		this.textArea.setFont(new Font("Century Gothic", Font.BOLD, 12)); // set a default font for the TextArea
+        this.textArea.setLineWrap(useWordWrap);
+        this.textArea.setWrapStyleWord(useWordWrap);
         this.textArea.addKeyListener(this);
 
         highlighter = textArea.getHighlighter();
@@ -117,6 +120,10 @@ public class TextEditor extends JFrame implements ActionListener, KeyListener  {
 		this.darkTheme.addActionListener(this);
 		this.style.add(this.darkTheme);
 
+		//Word wrap
+		this.wordWrapOption.setLabel("Use word wrapping");
+		this.wordWrapOption.addActionListener(this);
+		this.style.add(this.wordWrapOption);
 		//About information
         this.aboutApp.setLabel("About");
         this.aboutApp.addActionListener(this);
@@ -183,11 +190,11 @@ public class TextEditor extends JFrame implements ActionListener, KeyListener  {
             builder.append("i : ").append(vowels.get('i')).append("\n");
             builder.append("o : ").append(vowels.get('o')).append("\n");
             builder.append("u : ").append(vowels.get('u'));
-            JOptionPane.showMessageDialog(getParent(), builder.toString() );
+            JOptionPane.showMessageDialog(this, builder.toString() );
         }
         else if(e.getSource() == this.performRegix)
         {
-            String expression = JOptionPane.showInputDialog(getParent(),"Insert a regular expression.");
+            String expression = JOptionPane.showInputDialog(this,"Insert a regular expression.");
             try
             {
                 if(expression != null)
@@ -204,22 +211,22 @@ public class TextEditor extends JFrame implements ActionListener, KeyListener  {
                             builder.append(matcher.group(i)).append(",");
                         }
                         builder.append(matcher.group(matcher.groupCount()));
-                        JOptionPane.showMessageDialog(getParent(), builder.toString());
+                        JOptionPane.showMessageDialog(this, builder.toString());
                     }
                     else
                     {
-                        JOptionPane.showMessageDialog(getParent(), "No matches.");
+                        JOptionPane.showMessageDialog(this, "No matches.");
                     }
                 }
                 else
                 {
-                    JOptionPane.showMessageDialog(getParent(), "Error: expression empty");
+                    JOptionPane.showMessageDialog(this, "Error: expression empty");
                 }
 
             }
             catch(PatternSyntaxException exception)
             {
-                JOptionPane.showMessageDialog(getParent(), "Error on Regex : \n" + exception.getMessage() );
+                JOptionPane.showMessageDialog(this, "Error on Regex : \n" + exception.getMessage() );
             }
         }
         else if(e.getSource() == this.findAndReplace)
@@ -231,7 +238,7 @@ public class TextEditor extends JFrame implements ActionListener, KeyListener  {
 					"Replace with:", replacement
 			};
 
-			int option = JOptionPane.showConfirmDialog(getParent(), message, "Find and Replace", JOptionPane.OK_CANCEL_OPTION);
+			int option = JOptionPane.showConfirmDialog(this, message, "Find and Replace", JOptionPane.OK_CANCEL_OPTION);
 			if (option == JOptionPane.OK_OPTION)
 			{
 				String theWordToFind = toFind.getText();
@@ -241,6 +248,13 @@ public class TextEditor extends JFrame implements ActionListener, KeyListener  {
 
 			}
 		}
+		else if(e.getSource() == this.wordWrapOption)
+        {
+            useWordWrap = !useWordWrap;
+            this.textArea.setLineWrap(useWordWrap);
+            this.textArea.setWrapStyleWord(useWordWrap);
+
+        }
         else if(e.getSource() == this.darkTheme)
         {
             if(!inDarkTheme)
@@ -272,7 +286,7 @@ public class TextEditor extends JFrame implements ActionListener, KeyListener  {
         }
         else if(e.getSource() == this.fontSize)
 		{
-			String fontSizeString = JOptionPane.showInputDialog(getParent(),"Pick a new font size. Current size: " + textArea.getFont().getSize());
+			String fontSizeString = JOptionPane.showInputDialog(this,"Pick a new font size. Current size: " + textArea.getFont().getSize());
 			try
 			{
 				float properFontSize = Float.parseFloat(fontSizeString);
@@ -280,16 +294,16 @@ public class TextEditor extends JFrame implements ActionListener, KeyListener  {
 			}
 			catch(NumberFormatException ex)
 			{
-				JOptionPane.showMessageDialog(getParent(), "Error on Font Size setting: \n" + ex.getMessage() );
+				JOptionPane.showMessageDialog(this, "Error on Font Size setting: \n" + ex.getMessage() );
 			}
 		}
 		else if(e.getSource() == this.aboutApp)
 		{
-			JOptionPane.showMessageDialog(getParent(), "This is a custom notepad app developed in my free time.","About app", JOptionPane.INFORMATION_MESSAGE);
+			JOptionPane.showMessageDialog(this, "This is a custom notepad app developed in my free time.","About app", JOptionPane.INFORMATION_MESSAGE);
 		}
 		else if(e.getSource() == this.docs)
 		{
-			JOptionPane.showMessageDialog(getParent(), "Coming soon.","Tips and tricks", JOptionPane.INFORMATION_MESSAGE);
+			JOptionPane.showMessageDialog(this, "Coming soon.","Tips and tricks", JOptionPane.INFORMATION_MESSAGE);
 		}
 		else if(e.getSource() == this.fontName)
         {
@@ -386,6 +400,7 @@ public class TextEditor extends JFrame implements ActionListener, KeyListener  {
 	@Override
 	public void keyTyped(KeyEvent e)
 	{
+		/*
 	    if(textArea.getText().contains("class"))
         {
             int start = textArea.getText().indexOf("class");
@@ -401,7 +416,7 @@ public class TextEditor extends JFrame implements ActionListener, KeyListener  {
         }
 
         labelLineCount.setText(LineCounter.CountLines(textArea.getText()) + " Lines " + LineCounter.CountCharacters(textArea.getText()) + " characters");
-
+		*/
 
 	}
 
