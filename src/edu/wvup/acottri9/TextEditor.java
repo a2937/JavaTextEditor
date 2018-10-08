@@ -40,10 +40,14 @@ public class TextEditor extends JFrame implements ActionListener, KeyListener  {
 	private MenuItem fontName = new MenuItem(); // The name of the font
 	private MenuItem fontSize = new MenuItem(); // The size of the font
 	private MenuItem wordWrapOption = new MenuItem(); // Whether or not words should go to the next line
+
     //in tools
     private MenuItem vowelCount = new MenuItem(); // Displays a print out of the number of occurrences of each vowel.
     private MenuItem performRegix = new MenuItem(); // Creates a display to run Regular expressions against the text in the file
 	private MenuItem findAndReplace = new MenuItem(); // The most important feature of a text editor; a find and replace option
+    private MenuItem encrypt = new MenuItem(); // This button will take the text and apply a caesar cypher to it
+    private MenuItem decrypt = new MenuItem(); // This button will take the text and decrypt it with a caesar cypher
+
     //In the help menu
     private MenuItem aboutApp = new MenuItem(); // Displays information build info
     private MenuItem docs = new MenuItem(); //In case users need information on keybindings/shortcuts and that stuff
@@ -94,8 +98,8 @@ public class TextEditor extends JFrame implements ActionListener, KeyListener  {
 		this.ourMenuBar.add(this.file); // we'll configure this later
 		this.ourMenuBar.add(this.style);
 		this.ourMenuBar.add(this.tools);
+        this.ourMenuBar.add(this.language);
 		this.ourMenuBar.add(this.help);
-		this.ourMenuBar.add(this.language);
 		// first off, the design of the menuBar itself. Pretty simple, all we need to do
 		// is add a couple of menus, which will be populated later on
 		this.file.setLabel("File");
@@ -120,19 +124,39 @@ public class TextEditor extends JFrame implements ActionListener, KeyListener  {
 		this.darkTheme.addActionListener(this);
 		this.style.add(this.darkTheme);
 
+		//encrypt
+        this.encrypt.setLabel("Encrypt text");
+        this.encrypt.addActionListener(this);
+        this.tools.add(encrypt);
+
+        //decrypt
+        this.decrypt.setLabel("Decrypt text");
+        this.decrypt.addActionListener(this);
+        this.tools.add(decrypt);
+
 		//Word wrap
 		this.wordWrapOption.setLabel("Use word wrapping");
 		this.wordWrapOption.addActionListener(this);
 		this.style.add(this.wordWrapOption);
-		//About information
-        this.aboutApp.setLabel("About");
-        this.aboutApp.addActionListener(this);
-        this.help.add(this.aboutApp);
+
+
+
 
         //Documentation
         this.docs.setLabel("Tips and tricks");
         this.docs.addActionListener(this);
         this.help.add(this.docs);
+
+        //Java lang option
+        this.javaLang.setLabel("Java");
+        this.javaLang.addActionListener(this);
+        this.language.add(this.javaLang);
+
+        //About information
+        this.aboutApp.setLabel("About");
+        this.aboutApp.addActionListener(this);
+        this.help.add(this.aboutApp);
+
 
         //Find and replace
 		this.findAndReplace.setLabel("Find and replace");
@@ -192,6 +216,37 @@ public class TextEditor extends JFrame implements ActionListener, KeyListener  {
             builder.append("u : ").append(vowels.get('u'));
             JOptionPane.showMessageDialog(this, builder.toString() );
         }
+        else if(e.getSource() == this.encrypt)
+        {
+            try
+            {
+                int shift = Integer.parseInt(JOptionPane.showInputDialog(this,"What is the number you want associated with the encryption?"));
+                String encryptedText = CypherTools.encryptText(textArea.getText(),shift);
+                textArea.setText(encryptedText);
+                JOptionPane.showMessageDialog(this,"In order to decrypt this text,  you'll need the number associated with it. \n" +
+                                                     "Your number was " + shift + " make a note of it.");
+            }
+            catch (NumberFormatException ex)
+            {
+                JOptionPane.showMessageDialog(this,"Cannot read number. Aborting.","Error",JOptionPane.ERROR_MESSAGE);
+            }
+
+        }
+
+        else if(e.getSource() == this.decrypt)
+        {
+            try
+            {
+                int shift = Integer.parseInt(JOptionPane.showInputDialog(this,"What is the number associated with the encryption?"));
+                String normalText = CypherTools.decryptText(textArea.getText(),shift);
+                textArea.setText(normalText);
+            }
+            catch (NumberFormatException ex)
+            {
+                JOptionPane.showMessageDialog(this,"Cannot read number. Aborting.","Error",JOptionPane.ERROR_MESSAGE);
+            }
+
+        }
         else if(e.getSource() == this.performRegix)
         {
             String expression = JOptionPane.showInputDialog(this,"Insert a regular expression.");
@@ -201,17 +256,18 @@ public class TextEditor extends JFrame implements ActionListener, KeyListener  {
                 {
                     Pattern pattern = Pattern.compile(expression);
                     Matcher matcher = pattern.matcher(textArea.getText());
+
                     if(matcher.find())
                     {
-                        StringBuilder builder = new StringBuilder();
-                        builder.append("Matches: \n");
 
+                        /*
                         for(int i = 0; i  <matcher.groupCount() - 1; i++)
                         {
                             builder.append(matcher.group(i)).append(",");
                         }
                         builder.append(matcher.group(matcher.groupCount()));
-                        JOptionPane.showMessageDialog(this, builder.toString());
+                        */
+                        JOptionPane.showMessageDialog(this, "Matches found: " + matcher.groupCount());
                     }
                     else
                     {
@@ -262,25 +318,12 @@ public class TextEditor extends JFrame implements ActionListener, KeyListener  {
                 textArea.setBackground(Color.black);
                 textArea.setForeground(Color.white);
 
-                /*
-                 * labelLineCount.setBackground(Color.black);
-                 * labelLineCount.setForeground(Color.white);
-                 * labelLineCount.updateUI();
-                 */
                 inDarkTheme = true;
             }
             else
             {
                 textArea.setBackground(Color.white);
                 textArea.setForeground(Color.black);
-
-
-
-                labelLineCount.setBackground(Color.white);
-                labelLineCount.setForeground(Color.black);
-                labelLineCount.updateUI();
-
-
                 inDarkTheme = false;
             }
         }
@@ -347,19 +390,6 @@ public class TextEditor extends JFrame implements ActionListener, KeyListener  {
 
                     }
                     labelLineCount.setText(LineCounter.CountLines(textArea.getText()) + " Lines " + LineCounter.CountCharacters(textArea.getText()) + " characters");
-                    /*
-                    if (textArea.getText().contains("class")) {
-                        int start = textArea.getText().indexOf("class");
-
-                        int end = start + "class".length();
-                        try
-                        {
-                            highlighter.addHighlight(start, end, paint);
-                        } catch (BadLocationException ex) {
-                            System.err.println(ex.getLocalizedMessage());
-                        }
-                    }
-                    */
 
                 } catch (Exception ex) { // catch any exceptions, and...
                     // ...write to the debug console
@@ -400,6 +430,7 @@ public class TextEditor extends JFrame implements ActionListener, KeyListener  {
 	@Override
 	public void keyTyped(KeyEvent e)
 	{
+		labelLineCount.setText(LineCounter.CountLines(textArea.getText()) + " Lines " + LineCounter.CountCharacters(textArea.getText()) + " characters");
 		/*
 	    if(textArea.getText().contains("class"))
         {
@@ -415,7 +446,7 @@ public class TextEditor extends JFrame implements ActionListener, KeyListener  {
             }
         }
 
-        labelLineCount.setText(LineCounter.CountLines(textArea.getText()) + " Lines " + LineCounter.CountCharacters(textArea.getText()) + " characters");
+
 		*/
 
 	}
