@@ -1,11 +1,13 @@
 package edu.wvup.acottri9;
 
 import javax.swing.*; // for the main JFrame design
-import javax.swing.text.BadLocationException;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Highlighter;
 import java.awt.*; // for the GUI stuff
 import java.awt.event.*; // for the event handling
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner; // for reading from a file
 import java.io.*; // for writing to a file
@@ -16,6 +18,8 @@ import java.util.regex.PatternSyntaxException;
 
 public class TextEditor extends JFrame implements ActionListener, KeyListener  {
 
+	private int tabCount; 
+	
 	private boolean inDarkTheme = false;
 	private boolean useWordWrap = true;
     private transient  Highlighter.HighlightPainter paint = new DefaultHighlighter.DefaultHighlightPainter(Color.pink);
@@ -35,6 +39,8 @@ public class TextEditor extends JFrame implements ActionListener, KeyListener  {
 	private MenuItem saveFile = new MenuItem(); // a save option
 	private MenuItem close = new MenuItem(); // and a close option!
 
+	private Map<String,String> fileContents = new HashMap<String,String>(); 
+	
 	//in style
 	private MenuItem darkTheme = new MenuItem(); // black on white instead of white on black
 	private MenuItem fontName = new MenuItem(); // The name of the font
@@ -53,6 +59,7 @@ public class TextEditor extends JFrame implements ActionListener, KeyListener  {
     private MenuItem docs = new MenuItem(); //In case users need information on keybindings/shortcuts and that stuff
 
 	private MenuItem javaLang = new MenuItem(); // A button for syntax highlighting java
+	private final JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 	/**
 	 * Launch the application.
 	 */
@@ -75,7 +82,7 @@ public class TextEditor extends JFrame implements ActionListener, KeyListener  {
 		this.setTitle("Custom Notepad"); // set the title of the window
 		setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE); // set the default close operation (exit when it gets closed)
 
-        JScrollPane scroll = new JScrollPane (textArea,
+        JScrollPane scrollArea = new JScrollPane (textArea,
                 JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
 
 
@@ -87,7 +94,35 @@ public class TextEditor extends JFrame implements ActionListener, KeyListener  {
         highlighter = textArea.getHighlighter();
 		// this is why we didn't have to worry about the size of the TextArea!
 		this.getContentPane().setLayout(new BorderLayout()); // the BorderLayout bit makes it fill it automatically
-		this.getContentPane().add(scroll);
+		
+		getContentPane().add(tabbedPane, BorderLayout.NORTH);
+		
+		this.getContentPane().add(scrollArea);
+	     
+		this.tabbedPane.addChangeListener(new ChangeListener() 
+		{
+
+			@Override
+			public void stateChanged(ChangeEvent e) 
+			{
+				  if (e.getSource() instanceof JTabbedPane)
+				  {
+                      JTabbedPane pane = (JTabbedPane) e.getSource();
+                      if(pane.getSelectedIndex() != -1)
+                      {
+                    	  textArea.setText(fileContents.get(pane.getTitleAt(pane.getSelectedIndex())));
+                    	  labelLineCount.setText(LineCounter.CountLines(textArea.getText()) + " Lines " + LineCounter.CountCharacters(textArea.getText()) + " characters");
+                      }
+                      else
+                      {
+                    	  textArea.setText("");
+                      }
+				  }
+				
+			}
+		
+		});
+		
 		
 		labelLineCount = new JLabel("");
 		
@@ -216,6 +251,13 @@ public class TextEditor extends JFrame implements ActionListener, KeyListener  {
             builder.append("u : ").append(vowels.get('u'));
             JOptionPane.showMessageDialog(this, builder.toString() );
         }
+        else if(e.getSource() == this.javaLang)
+		{
+            Highlighter h = textArea.getHighlighter();
+            h.removeAllHighlights();
+
+
+		}
         else if(e.getSource() == this.encrypt)
         {
             try
@@ -373,7 +415,8 @@ public class TextEditor extends JFrame implements ActionListener, KeyListener  {
         }
 		
 		// if the source was the "open" option
-		else if (e.getSource() == this.openFile) {
+		else if (e.getSource() == this.openFile) 
+		{
 			JFileChooser open = new JFileChooser(); // open up a file chooser (a dialog for the user to browse files to open)
 			int option = open.showOpenDialog(this); // get the option that the user selected (approve or cancel)
 			// NOTE: because we are OPENing a file, we call showOpenDialog~
@@ -382,15 +425,24 @@ public class TextEditor extends JFrame implements ActionListener, KeyListener  {
 			if (option == JFileChooser.APPROVE_OPTION) 
 			{
                 this.textArea.setText(""); // clear the TextArea before applying the file contents
-                try (Scanner scan = new Scanner(new FileReader(open.getSelectedFile().getPath()))) {
+                this.tabbedPane.addTab(open.getSelectedFile().getName(), new JLabel());
+                this.tabbedPane.setTabComponentAt(tabCount, new ButtonTabComponent(this.tabbedPane));
+                this.tabbedPane.setSelectedIndex(tabCount);
+                 this.tabCount++; 
+               
+                try (Scanner scan = new Scanner(new FileReader(open.getSelectedFile().getPath())))
+				{
                     // create a scanner to read the file (getSelectedFile().getPath() will get the path to the file)
                     while (scan.hasNext()) {
                         // while there's still something to read
                         this.textArea.append(scan.nextLine() + "\n"); // append the line to the TextArea
-
+              
                     }
+              
+                    fileContents.put(open.getSelectedFile().getName(), textArea.getText()); 
                     labelLineCount.setText(LineCounter.CountLines(textArea.getText()) + " Lines " + LineCounter.CountCharacters(textArea.getText()) + " characters");
-
+                   
+                   // 
                 } catch (Exception ex) { // catch any exceptions, and...
                     // ...write to the debug console
                     System.out.println(ex.getMessage());
@@ -411,6 +463,7 @@ public class TextEditor extends JFrame implements ActionListener, KeyListener  {
 				{
 					// create a buffered writer to write to a file
 					out.write(this.textArea.getText()); // write the contents of the TextArea to the file
+					this.fileContents.put(tabbedPane.getTitleAt(tabbedPane.getSelectedIndex()),textArea.getText()); 
 				  // close the file stream
 				} catch (Exception ex) { // again, catch any exceptions and...
 					// ...write to the debug console
@@ -419,6 +472,8 @@ public class TextEditor extends JFrame implements ActionListener, KeyListener  {
 			}
 		}
 	}
+	
+	 
 
 	/**
 	 * Invoked when a key has been typed.
